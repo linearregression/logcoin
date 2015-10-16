@@ -9,18 +9,21 @@ def mkproto(ip, port,s):
     def send(i):
         conn.send(format(i,'x'))
     def recv():
-        return int(conn.recv(16384),16)
+        a=conn.recv(2048)
+        return int(a,16)
     def prng():
         return int(os.urandom(1024).encode('hex'),16)
     def close():
         conn.close()
     return send,recv,prng,close
-p=2**607-1
 def bank(ip,port,coins):
+    #p=gensafeprime.generate(1024)
+    p=2**607-1
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((ip, port))
     while 1:
         send,recv,prng,close=mkproto(ip,port,s)
+        send(p)
         y2=recv()
         y3=recv()
         y4=recv()
@@ -33,17 +36,18 @@ def bank(ip,port,coins):
                 valid=True
                 break
         if valid:
-            if discrete_log_proof.proto_exchange_verify(2,p,y,prng,send,recv,40):
+            if discrete_log_proof.proto_exchange_verify(2,p,y,prng,send,recv,100):
                     coins.remove(y)
-                    coins.add(y2)
+                    coins.add((y2)%p)
                     print "transacted"
         close()
         return coins
 def wallet(ip,port,x):
     send,recv,prng,close=mkproto(ip,port,None)
-    b=prng()%p
+    p=recv()
+    b=prng()
     send(pow(2,x+b,p))
-    c=prng()%p
+    c=prng()
     send(pow(2,x+c,p))
     send(pow(2,b+c,p))
     res=discrete_log_proof.proto_exchange_prove(2,p,x,prng,send,recv)

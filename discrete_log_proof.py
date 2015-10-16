@@ -1,10 +1,10 @@
 def dlog_know(x,r,p,g,which):
-	if which:
-		return pow(g,x+r,p-1)
+	if which==1:
+		return (x+r)%(p-1)
 	return r
 def dlog_verify(C,res,y,p,g,which):
-	if which:
-		return (pow(g,res,p)==((C*y)%p))
+	if which==1:
+		return (pow(g,res,p)==(C*y)%p)
 	return (pow(g,res,p) == C)
 def proto_exchange_verify(g,p,y,prng,send,recv,thresh):
 	while thresh>0:
@@ -25,8 +25,8 @@ def proto_exchange_prove(g,p,x,prng,send,recv):
 		q=recv()
 		if(q!=2):
 			break
-		r=prng()%p
+		r=prng()
 		send(pow(g,r,p))
 		which=recv()
 		send(dlog_know(x,r,p,g,which))
-	return (q>0)
+	return (q==0)
