@@ -1,4 +1,4 @@
-import httplib,gensafeprime,struct,os,socket,math,sympy, discrete_log_proof,array
+import gensafeprime,struct,os,socket,math,discrete_log_proof
 def mkproto(ip, port,s):
     if s is not None:
         s.listen(1)
@@ -40,7 +40,6 @@ def bank(ip,port,coins,p):
                     coins.add((y*y4)%p)
                     print "transacted"
         close()
-        return coins
 def wallet(ip,port,x):
     send,recv,prng,close=mkproto(ip,port,None)
     p=recv()
@@ -49,6 +48,6 @@ def wallet(ip,port,x):
     c=prng()
     send(pow(2,x+c,p))
     send(pow(2,b+c,p))
-    res=discrete_log_proof.proto_exchange_prove(2,p,x+b+c,prng,send,recv)
+    res=discrete_log_proof.proto_exchange_prove(2,p,(x+b+c)%(p-1),prng,send,recv)
     close()
-    return res
+    return res,(x+b+c)%(p-1)
