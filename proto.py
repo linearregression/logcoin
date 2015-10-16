@@ -16,9 +16,8 @@ def mkproto(ip, port,s):
     def close():
         conn.close()
     return send,recv,prng,close
-def bank(ip,port,coins):
-    #p=gensafeprime.generate(1024)
-    p=2**607-1
+def bank(ip,port,coins,p):
+    #p=2**607-1
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((ip, port))
     while 1:
