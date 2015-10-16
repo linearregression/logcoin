@@ -36,9 +36,9 @@ def bank(ip,port,coins):
                 valid=True
                 break
         if valid:
-            if discrete_log_proof.proto_exchange_verify(2,p,y,prng,send,recv,100):
+            if discrete_log_proof.proto_exchange_verify(2,p,(y*y4)%p,prng,send,recv,100):
                     coins.remove(y)
-                    coins.add((y2)%p)
+                    coins.add((y*y4)%p)
                     print "transacted"
         close()
         return coins
@@ -50,6 +50,6 @@ def wallet(ip,port,x):
     c=prng()
     send(pow(2,x+c,p))
     send(pow(2,b+c,p))
-    res=discrete_log_proof.proto_exchange_prove(2,p,x,prng,send,recv)
+    res=discrete_log_proof.proto_exchange_prove(2,p,x+b+c,prng,send,recv)
     close()
     return res
