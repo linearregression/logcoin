@@ -7,9 +7,9 @@ def mkproto(ip, port,s):
         conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         conn.connect((ip, port))
     def send(i):
-        conn.send(str(i))
+        conn.send(format(i,'x'))
     def recv():
-        return int(conn.recv(16384))
+        return int(conn.recv(16384),16)
     def prng():
         return int(os.urandom(1024).encode('hex'),16)
     def close():
@@ -23,14 +23,17 @@ def bank(ip,port,coins):
         send,recv,prng,close=mkproto(ip,port,s)
         y2=recv()
         y3=recv()
+        y4=recv()
         y=0
-        for c in coins:
-            if ((y2)%c==0) and ((y3)%c==0):
-                print y
-                y=c
+        valid=False
+        for coin in coins:
+            if (((y4*coin)%p)*coin)%p==(y2*y3)%p:
+                y=coin
+                print "coin", y
+                valid=True
                 break
-        if y:
-            if discrete_log_proof.proto_exchange_verify(2,p,y,prng,send,recv,100):
+        if valid:
+            if discrete_log_proof.proto_exchange_verify(2,p,y,prng,send,recv,40):
                     coins.remove(y)
                     coins.add(y2)
                     print "transacted"
@@ -39,8 +42,10 @@ def bank(ip,port,coins):
 def wallet(ip,port,x):
     send,recv,prng,close=mkproto(ip,port,None)
     b=prng()%p
-    send(discrete_log_proof.dexp(2,p,x+b))
-    c=(prng()+b)%p
-    send(discrete_log_proof.dexp(2,p,x+c))
-    discrete_log_proof.proto_exchange_prove(2,p,x,prng,send,recv)
+    send(pow(2,x+b,p))
+    c=prng()%p
+    send(pow(2,x+c,p))
+    send(pow(2,b+c,p))
+    res=discrete_log_proof.proto_exchange_prove(2,p,x,prng,send,recv)
     close()
+    return res

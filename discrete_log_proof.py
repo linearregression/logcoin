@@ -1,20 +1,11 @@
-from math import *
-def dexp(p,g,x):
-	k=floor(log(p)/log(2))
-	b=g if (log(p)-k*log(2)>0.5*log(2)) else 1
-	y=1
-	while k:
-		y=(y*y)%p
-		k-=1
-	return (y*b)%p;#we choose the integers mod p under addition mod p as our group.
 def dlog_know(x,r,p,g,which):
 	if which:
-		return dexp(p-1,g,x+r)
+		return pow(g,x+r,p-1)
 	return r
 def dlog_verify(C,res,y,p,g,which):
 	if which:
-		return (dexp(p,g,res)==((C*y)%p))
-	return (dexp(p,g,res) == C)
+		return (pow(g,res,p)==((C*y)%p))
+	return (pow(g,res,p) == C)
 def proto_exchange_verify(g,p,y,prng,send,recv,thresh):
 	while thresh>0:
 		send(2)
@@ -22,11 +13,11 @@ def proto_exchange_verify(g,p,y,prng,send,recv,thresh):
 		C=recv()
 		send(which)
 		res=recv()
-		if not dlog_verify(C,res,y,p,g,which):
-			send(31)
+		if dlog_verify(C,res,y,p,g,which)==False:
+			send(1)
 			return False
 		thresh-=1
-	send(32)
+	send(0)
 	return True
 def proto_exchange_prove(g,p,x,prng,send,recv):
 	q=2
@@ -34,8 +25,8 @@ def proto_exchange_prove(g,p,x,prng,send,recv):
 		q=recv()
 		if(q!=2):
 			break
-		r=prng()
-		send(dexp(p,g,r))
+		r=prng()%p
+		send(pow(g,r,p))
 		which=recv()
 		send(dlog_know(x,r,p,g,which))
-	return (q==32)
+	return (q>0)
